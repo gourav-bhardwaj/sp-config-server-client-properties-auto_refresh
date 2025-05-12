@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: sp-config-client-app
+
+echo:
+  message:
+    text: 'demo, world!'
+    label: "demo World!!"

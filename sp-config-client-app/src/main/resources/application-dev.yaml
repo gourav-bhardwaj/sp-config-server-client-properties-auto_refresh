@@ -1,0 +1,22 @@
+server:
+  port: 8090
+
+spring:
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8888
+    stream:
+      kafka:
+        binder:
+          brokers:
+            - http://localhost:29092
+    bus:
+      trace:
+        enabled: true
+      refresh:
+        enabled: true
+      env:
+        enabled: true
