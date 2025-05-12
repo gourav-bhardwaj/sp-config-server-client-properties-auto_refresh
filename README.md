@@ -9,15 +9,15 @@ Follow the steps:
 ngrok http http://localhost:8888
 ```
 
-Copy the forwarding URL mapping with your local URL - https://a50c-43-224-1-204.ngrok-free.app -> http://localhost:8888
+Copy the forwarding URL mapping with your local URL - https://ngrok-free.app -> http://localhost:8888
 
-2. Configure the GitHub webhook in the repository where the properties stored:
+2. Configure the GitHub webhook in the repository where the properties are stored:
    Setting > Webhook
-     Path: https://a50c-43-224-1-204.ngrok-free.app/monitor?path=application
+     Path: https://ngrok-free.app/monitor?path=application
      Content-Type: application/x-www-form-urlencoded
 
 3. Run your Docker Desktop
-4. Now run config-server using below command
+4. Now run the config-server using the below command
 ```sh
 
 ```
