@@ -43,25 +43,17 @@ Spring Boot Clients (auto-refresh configs)
 
 ## 🚀 Setup Instructions
 
-### 1. Start Kafka & Zookeeper (Docker)
+### 1. Expose Config Server via Ngrok
 
 ```bash
-docker-compose -f kafka-docker-compose.yml up -d
-```
-
----
-
-### 2. Expose Config Server via Ngrok
-
-```bash
-ngrok http 8888
+ngrok http http://localhost:8888
 ```
 
 > Note down the generated HTTPS forwarding URL (e.g., `https://abc123.ngrok-free.app`).
 
 ---
 
-### 3. Configure GitHub Webhook
+### 2. Configure GitHub Webhook
 
 In your GitHub **config repository**:
 
@@ -74,7 +66,7 @@ In your GitHub **config repository**:
 
 ---
 
-### 4. Run the Config Server
+### 3. Run the Config Server
 
 ```bash
 mvn spring:run -Dspring-boot.run.jvmArguments="\
@@ -85,7 +77,7 @@ mvn spring:run -Dspring-boot.run.jvmArguments="\
 
 ---
 
-### 5. Run the Config Client(s)
+### 4. Run the Config Client(s)
 
 ```bash
 cd config-client
@@ -94,7 +86,7 @@ mvn spring-boot:run
 
 ---
 
-### 6. Test Auto Refresh
+### 5. Test Auto Refresh
 
 1. Change any value in the GitHub config repo (e.g., `application.yml`)
 2. Commit and push
@@ -108,15 +100,23 @@ mvn spring-boot:run
 
 ```yaml
 # application.yml (in GitHub repo)
-custom:
-  message: Hello from central config!
+echo:
+  message:
+    text: 'This is my world!!!'
+    label: "This World - 5!!"
 ```
 
 You can expose this in your client controller:
 
 ```java
-@Value("${custom.message}")
-private String message;
+@Component
+@ConfigurationProperties(prefix = "echo.message")
+public class CustomProperties {
+    private String text;
+    private String label;
+
+  // Getter & Setter
+}
 ```
 
 ---
