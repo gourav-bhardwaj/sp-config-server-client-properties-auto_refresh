@@ -1,42 +1,137 @@
-# Config server & Client with Auto refresh feature using kafka
-Spring config server is used to make your configuration centralized, which can be used by multiple applications, and client properties are automatically refreshed using a git webhook. The webhook endpoint, which we're configuring, belongs to the config-server.
+# 🌐 Spring Cloud Config Server with Kafka-based Auto Refresh
 
-Follow the steps:
+This project demonstrates how to build a centralized configuration management system using **Spring Cloud Config Server**, **Kafka**, and **GitHub Webhooks**. Config changes in the Git repository are automatically propagated to all client services using **Spring Cloud Bus with Kafka**.
 
-1. Create a global endpoint using ngrok for the config-server
-```sh
-ngrok http http://localhost:8888
+---
+
+## 📌 Features
+
+- Centralized configuration for microservices
+- Git-based property management
+- Real-time configuration updates using GitHub Webhooks
+- Auto-refresh client configs using Spring Cloud Bus (Kafka)
+- Scalable and production-ready setup
+
+---
+
+## 🏗️ Architecture
+
+```
+GitHub (config repo)
+        │
+        ▼
+GitHub Webhook → Spring Config Server (via /monitor)
+        │
+        ▼
+Spring Cloud Bus (Kafka)
+        │
+        ▼
+Spring Boot Clients (auto-refresh configs)
 ```
 
-2. Copy the forwarding URL mapping with your local URL - https://ngrok-free.app -> http://localhost:8888
+---
 
-3. Configure the GitHub webhook in the repository where the properties are stored:
-   Setting > Webhook
-     Path: https://ngrok-free.app/monitor?path=application
-     Content-Type: application/x-www-form-urlencoded
-     Enable SSL
-     The event hit on push
+## ⚙️ Prerequisites
 
-4. Run your Docker Desktop
+- Java 17+
+- Maven
+- Docker (for Kafka and Zookeeper)
+- Ngrok (to expose local server to GitHub)
+- A GitHub repo containing your config files (e.g., `application.yml`)
 
-5. Now run the config-server using the below command
-```sh
-mvn spring:run -Dspring-boot.run.jvmArguments="-DGIT_REPO=... -DGIT_USERNAME=... -DGIT_PASSWORD=..."
+---
+
+## 🚀 Setup Instructions
+
+### 1. Start Kafka & Zookeeper (Docker)
+
+```bash
+docker-compose -f kafka-docker-compose.yml up -d
 ```
 
-6. Run the config-client using the below command
-```sh
+---
+
+### 2. Expose Config Server via Ngrok
+
+```bash
+ngrok http 8888
+```
+
+> Note down the generated HTTPS forwarding URL (e.g., `https://abc123.ngrok-free.app`).
+
+---
+
+### 3. Configure GitHub Webhook
+
+In your GitHub **config repository**:
+
+- Go to **Settings → Webhooks → Add webhook**
+- **Payload URL**:  
+  `https://<ngrok-id>.ngrok-free.app/monitor?path=application`
+- **Content Type**: `application/x-www-form-urlencoded`
+- Enable SSL
+- Trigger on `Just the push event`
+
+---
+
+### 4. Run the Config Server
+
+```bash
+mvn spring:run -Dspring-boot.run.jvmArguments="\
+-DGIT_REPO=https://github.com/<your-org>/config-repo.git \
+-DGIT_USERNAME=<your-username> \
+-DGIT_PASSWORD=<your-password>"
+```
+
+---
+
+### 5. Run the Config Client(s)
+
+```bash
+cd config-client
 mvn spring-boot:run
 ```
 
-7. Update any property from the GIT repository that contains properties.
+---
 
-8. It will hit the webhook endpoint of the config-server, and all config-clients application properties will be updated automatically.
+### 6. Test Auto Refresh
 
-Aren't you surprised!
+1. Change any value in the GitHub config repo (e.g., `application.yml`)
+2. Commit and push
+3. The webhook will notify the Config Server
+4. Config Server publishes an update event to Kafka
+5. All Config Clients receive and refresh the config automatically 🎉
 
-Suppose you have 10 to 20 microservices in an architecture, and we're using databases, caches, and third-party APIs, then any configuration change you want to do in that case, you need to visit every microservice, which is a very troublesome task. So, to resolve this issue, created a centralized properties auto-configure feature using Kafka.  
-   
+---
 
+## 🧪 Example Property
 
- 
+```yaml
+# application.yml (in GitHub repo)
+custom:
+  message: Hello from central config!
+```
+
+You can expose this in your client controller:
+
+```java
+@Value("${custom.message}")
+private String message;
+```
+
+---
+
+## 📦 Tech Stack
+
+- Spring Boot
+- Spring Cloud Config Server & Client
+- Spring Cloud Bus with Kafka
+- GitHub Webhooks
+- Docker
+- Ngrok
+
+---
+
+## 🙋 Why Use This?
+
+Managing config across 10–20+ microservices can be a nightmare. This setup automates and centralizes configuration delivery with zero manual effort — scalable, maintainable, and ideal for production environments.
